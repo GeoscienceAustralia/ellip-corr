@@ -8,19 +8,15 @@ C      The ellipticity corrections are found by linear interpolation
 C    in terms of values calculated for the ak135 model for a wide 
 C    range of phases to match the output of the iasp software 
 C
-C     first call:  ellref(ecolat) 
-C                        - to set up source dependent constants
-C     2nd call  :  ellcor(phase,edist,depth,ecolat,azim,tcor,abrt) 
-C                        - to calculate correction for a station                                                                                     C                                                                         
-C    Parameters: 
+C    Parameters:
 C    character  
 C          phase : a  string specifying the PHASE,   -e.g P, ScP etc.  
 C                                                        
 C    real 
 C          edist  :  epicentral distance to station (in degrees)     
 C          edepth :  depth of event         
-C          ecolat :  epicentral co-latitude of source (in radians) 
-C          azim   :  azimuth from source to station (in radians)
+C          ecolat :  epicentral co-latitude of source (in degrees)
+C          azim   :  azimuth from source to station (in degrees)
 C                                
 C          tcor   :  time correction for path to allow for ellipticity
 C 
@@ -101,7 +97,10 @@ Cf2py intent(in) ecolat
 Cf2py intent(in) azim
 Cf2py intent(out) tcor
 
-
+c     convert lat and azim into radians
+      degrad = 45.0/atan(1.0)
+      ecolat = (90.0-ecolat)/degrad
+      azim = azim/degrad
 c...
 c     In addition to the phase names listed above a number of phase aliases
 c     are available in the routine phase_alias, e.g. Pn --> P etc
