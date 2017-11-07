@@ -34,7 +34,7 @@ C   B.L.N. Kennett RSES,ANU        May 1995, August 1996
 C   (based on earlier routine by D.J. Brown)
 C   with input from W. Spakman, Utrecht
 C=========================================================================
-      character *(*) phase
+      character*8 phase
       character*8 phcod(57)
       integer phind(57),phspn(57),phnch(57)
       real edist,edepth,ecolat,azim,
