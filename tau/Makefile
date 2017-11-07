@@ -1,4 +1,8 @@
-#
+f77=gfortran
+
+.f.o:
+	$(f77) -c $*.f
+
 IASQ=emtvelin.o
 TAUL=libtau.o libsun.o
 #
@@ -8,15 +12,19 @@ BIN =
 #  resampling of model 
 REM = remodl.o
 remodlv: $(REM) $(TAUL) $(IASQ)
-	gfortran -o $(BIN)remodlv $(REM) $(IASQ) $(TAUL)
+	$(f77) -fdump-fortran-original -o $(BIN)remodlv $(REM) $(IASQ) $(TAUL)
 #
 #  set branches  program
 SBR = setbrn.o
 setbrn: $(SBR) $(TAUL) 
-	gfortran -o $(BIN)setbrn $(SBR) $(TAUL)
+	$(f77) -o $(BIN)setbrn $(SBR) $(TAUL)
 #
 # travel time branches program
 TBR =  ttimes.o       
 ttimes: $(TBR) $(TAUL)
-	gfortran -o $(BIN)ttimes $(TBR) $(TAUL)
+	$(f77) -o $(BIN)ttimes $(TBR) $(TAUL)
 #
+
+all: remodlv setbrn ttimes
+clean:
+	rm -f *.o ttimes setbrn remodlv

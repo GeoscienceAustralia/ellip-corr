@@ -1,3 +1,9 @@
+      subroutine abortmsg(msg)
+          character*(*)msg          
+          print *,msg
+          call abort
+      end
+
       program remodl
       save
       include 'limits.inc'
@@ -714,7 +720,7 @@ c   Check for convergence.
  1    xi=(x(j)*yi-xi*y(j))/(yi-y(j))
       write(msg,100)n,nph,xg
  100  format('Iteration did not converge:  n, nph, xg -',i4,i2,f7.4)
-      call abort(msg)
+      call abortmsg(msg)
 c   Return the final best guess of the zero.
  6    pp(n,nph)=xi
       xx(n,nph)=yi+xg
