@@ -1,0 +1,148 @@
+==========================================================================
+Subroutine ellip                                                                         
+Ellipticity correction for any given phase using
+Dziewonski & Gilbert representation                                                                                                                                       
+The ellipticity corrections are found by linear interpolation       
+in terms of values calculated for the ak135 model for a wide 
+range of phases to match the output of the iasp software 
+
+1st call  :  ellref(ecolat) 
+                   - to set up source dependent constants
+2nd call  :  ellcor(phase,edist,depth,ecolat,azim,tcor,abrt) 
+                        - to calculate correction for a station                                                                                                                                                              
+Parameters: 
+    character  
+          phase : a  string specifying the PHASE,   -e.g P, ScP etc.  
+                                                        
+    real 
+          edist  :  epicentral distance to station (in degrees)     
+          edepth :  depth of event 
+          ecolat :  epicentral co-latitude of source (in radians) 
+          azim   :  azimuth from source to station (in radians)
+          tcor   :  time correction for path to allow for ellipticity                                 
+    logical 
+          abrt   :  a logical variable -usally set to .FALSE.  
+                    which is set to .TRUE. if a phase for      
+                    which no data is available is chosen       
+                                                                         
+==========================================================================
+  B.L.N. Kennett RSES,ANU        May 1995      
+==========================================================================
+
+The direct-access ellipticity tables [elcordir.tbl] have been
+calculated using the procedure of:
+Doornbos D.J. (1988) Asphericity and Ellipticity Corrections,
+Seismological Algorithms, 75-85,
+Ed. D.J. Doornbos, Academic Press
+
+These routines have been coupled to the iasp software developed by
+R. Buland with the ak135 model from:
+Kennett B.L.N, Engdahl E.R. & Buland R. (1995)
+Constraints on seismic velocities in the Earth from traveltimes
+Geohpys. J. Int, in press
+
+A table of the tau terms for the ellipticity corrections 
+in the formulation of Dziewonski and Gilbert has been generated for
+each major phase branch at 5 degree intervals, using the ak135 model
+and the appropriate slowness for the epicentral distance.
+
+To set up the source dependent terms 
+
+   call ellref(ecolat) 
+
+where ecolat is the co-latitude of the source (in radians)
+This generates the source weightings
+      s3 = sqrt(3.0)/2.0
+      sc0 = 0.25*(1.0+3.0*cos(2.0*ecolat))
+      sc1 = s3*sin(2.0*ecolat)
+      sc2 = s3*sin(ecolat)*sin(ecolat)
+
+To determine the ellipticity correction for a given phase,
+at a specified azimuth from the source
+    call ellcor(phase,edist,depth,ecolat,azim,tcor,abrt)
+
+     phase  :  phase code
+     edist  :  epicentral distance to station (in degrees)     
+     edepth :  depth of event 
+     azim   :  azimuth from source to station (in radians)
+the subroutine calculates
+     tcor   :  time correction for path to allow for ellipticity    
+by linear interpolation in a table in which the tau corrections are
+stored at 5 degree intervals in distance and at the depths
+0., 100., 200., 300., 500., 700. km
+Linear extrapolation is used outside the tabulated range for a phase.
+
+The time correction for the phase and azimuth is calculated from
+the interpolated tau values by
+
+         tcor = sc0*tau0 + sc1*cos(azim)*tau1 + sc2*cos(2.0*azim)*tau2
+
+
+The available phases and the tabulated distance ranges are:
+
+Phase        delta min  delta max
+
+Pup      3       0.0      10.0
+P       20       5.0     100.0
+Pdiff   11     100.0     150.0
+PKPab    7     145.0     175.0
+PKPbc    3     145.0     155.0
+PKPdf   14     115.0     180.0
+PKiKP   32       0.0     155.0
+pP      17      20.0     100.0   
+pPKPab   7     145.0     175.0
+pPKPbc   3     145.0     155.0
+pPKPdf  14     115.0     180.0
+pPKiKP  32       0.0     155.0
+sP      20       5.0     100.0
+sPKPab   7     145.0     175.0
+sPKPbc   3     145.0     155.0
+sPKPdf  14     115.0     180.0
+sPKiKP  32       0.0     155.0
+PcP     19       0.0      90.0
+ScP     13       0.0      60.0
+SKPab    3     130.0     140.0
+SKPbc    5     130.0     150.0
+SKPdf   15     110.0     180.0
+SKiKP   30       0.0     145.0
+PKKPab   5     235.0     255.0
+PKKPbc  11     235.0     285.0
+PKKPdf  31     210.0     360.0
+SKKPab   2     215.0     220.0
+SKKPbc  14     215.0     280.0
+SKKPdf  32     205.0     360.0
+PP      31      40.0     190.0
+P'P'    26     235.0     360.0
+Sup      3       0.0      10.0
+S       19       5.0      95.0
+Sdiff   11     100.0     150.0
+SKSac   16      65.0     140.0
+SKSdf   16     105.0     180.0
+pS       9      60.0     100.0
+pSKSac  15      70.0     140.0
+pSKSdf  15     110.0     180.0
+sS      17      20.0     100.0
+sSKSac  16      65.0     140.0
+sSKSdf  15     110.0     180.0
+ScS     19       0.0      90.0
+PcS     13       0.0      60.0
+PKSab    3     130.0     140.0
+PKSbc    4     130.0     145.0
+PKSdf   15     110.0     180.0
+PKKSab   2     215.0     220.0
+PKKSbc  14     215.0     280.0
+PKKSdf  32     205.0     360.0
+SKKSac  43      65.0     275.0
+SKKSdf  33     200.0     360.0
+SS      31      40.0     190.0
+S'S'    47     130.0     360.0
+SP      17      55.0     135.0
+PS      10      90.0     135.0
+PnS      6      65.0      90.0
+
+The phase code is checked against the tabulated phases to find 
+the entry point to the table corresponding to the class of arrivals.
+
+The presence of a value in the tables does not imply a physical
+arrival at all distance, depth combinations.  Where necessary
+extrapolation has been used to ensure satisfactory results.

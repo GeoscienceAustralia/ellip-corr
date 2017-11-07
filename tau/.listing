@@ -1,0 +1,15 @@
+total 304
+drwxr-xr-x   2 1102     staff        512 Jul 25  2007 .
+drwxr-sr-t   5 1102     1007         512 Jul 25  2007 ..
+-rw-r--r--   1 1102     tty          410 Jul 25  2007 Makefile
+-rw-r--r--   1 1102     tty         6413 Jul 25  2007 ak135.tvel
+-rw-r--r--   1 1102     tty         2917 Jul 25  2007 emtvelin.f
+-rw-r--r--   1 1102     tty         5761 Jul 25  2007 iasp91.tvel
+-rw-r--r--   1 1102     tty         1927 Jul 25  2007 libsun.f
+-rw-r--r--   1 1102     tty        63084 Jul 25  2007 libtau.f
+-rw-r--r--   1 1102     tty         1347 Jul 25  2007 limits.inc
+-rw-r--r--   1 1102     tty        29511 Jul 25  2007 remodl.f
+-rw-r--r--   1 1102     tty        29612 Jul 25  2007 setbrn.f
+-rw-r--r--   1 1102     tty         4937 Jul 25  2007 travel.help
+-rw-r--r--   1 1102     tty         2724 Jul 25  2007 ttimes.f
+-rw-r--r--   1 1102     tty          974 Jul 25  2007 ttlim.inc

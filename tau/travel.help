@@ -1,0 +1,128 @@
+IASPEI format travel time tables
+
+As part of an effort to produce new global travel time tables the IASPEI 
+Subcommission on Earthquake Algorithms has generated a fast and accurate
+means of accessing travel times for a specified velocity model based on the
+Tau(p) calculation scheme of Buland & Chapman 
+
+The model can be read from a velocity file 
+example files are 
+iasp91.tvel    (Kennett & Engdahl 1991)
+ak135.tvel     (Kennett, Engdal & Buland 1995)
+
+The construction of the tables has two stages (a Makefile is provided)
+   remodl - sets up basic tau tables
+   setbrn - organises tables by travel time branches to
+            allow efficient depth interpolation
+
+Use e.g
+remodl ak135
+
+setbrn
+
+where ak135 is the required model name
+
+A set of direct access tables ak135.hed and ak135.tbl are
+then calculated
+
+Once the tables have been generated they can be accessed directly by
+using
+   ttimes
+
+The model name e.g. ak135
+    depth of source 
+    and branches have to be specified  
+      - see description at run time
+
+Example of use of ttimes:  (inputs marked with >)
+==========================
+
+enter model name:
+> ak135
+This routine for calculating travel times for
+specific distances uses a set of precalculated
+tau-p tables for the  ak135   model stored as
+ak135.hed  ak135.tbl
+
+The source depth has to be specified and also
+the phase codes or keywords for the required branches
+ALL will give all available branches
+P  gives P-up,P,Pdiff,PKP, and PKiKP
+P+ gives P-up,P,Pdiff,PKP,PKiKP,PcP,pP,pPdiff,pPKP,
+         pPKiKP,sP,sPdiff,sPKP, and sPKiKP
+S  gives S-up,S,Sdiff, and SKS
+S+ gives S-up,S,Sdiff,SKS,sS,sSdiff,sSKS,pS,pSdiff,
+         and pSKS 
+basic gives P+ and S+ as well as 
+         ScP, SKP, PKKP, SKKP, PP, and PKPPKP 
+
+or give a generic phase name
+
+You will have to enter a distance,
+if this is negative a new depth is calculated
+TO EXIT: give negative depth
+
+Enter desired branch control list at the prompts:
+>*all
+>*
+Brnset:  the following phases have been selected -
+              1  P       
+              2  PKP       P       
+              3  PKiKP   
+              4  pPKP      pP      
+              5  sPKP      sP      
+              6  pPKiKP  
+              7  sPKiKP  
+              8  PcP     
+              9  ScP     
+             10  SKP     
+             11  SKiKP   
+             12  PKKP    
+             13  SKKP    
+             14  P'P'      PP      
+             15  S       
+             16  SKS       S       
+             17  pSKS      pS      
+             18  sSKS      sS      
+             19  ScS     
+             20  PcS     
+             21  PKS     
+             22  PKKS    
+             23  SKKS    
+             24  S'S'      SS      
+             25  SP      
+             26  PS      
+>Source depth (km):  515
+
+>Enter delta:  78
+  delta    # code       time(s)    (min s)    dT/dD     dT/dh      d2T/dD2
+
+  78.00    1  P          664.88  11   4.88     5.3864  -8.85E-02  -4.12E-03
+           2  PcP        672.29  11  12.29     4.3581  -9.37E-02   3.05E-02
+           3  pP         775.13  12  55.13     5.7402   8.63E-02  -3.98E-03
+           4  sP         828.24  13  48.24     5.6476   1.80E-01  -4.14E-03
+           5  PP         850.09  14  10.09     8.2292  -6.42E-02  -9.29E-03
+           6  PKiKP      997.41  16  37.41     1.5301  -1.02E-01   2.14E-02
+           7  pPKiKP    1119.40  18  39.40     1.5132   1.02E-01   2.13E-02
+           8  SKiKP     1162.26  19  22.26     1.5824  -1.88E-01   2.16E-02
+           9  sPKiKP    1169.56  19  29.56     1.5171   1.88E-01   2.13E-02
+          10  S         1216.28  20  16.28    10.4846  -1.58E-01  -2.61E-03
+          11  SKSac     1229.64  20  29.64     7.0317  -1.76E-01  -2.56E-03
+          12  SKKSac    1231.25  20  31.25     7.5508  -1.74E-01  -6.01E-02
+          13  ScS       1236.80  20  36.80     8.1519  -1.71E-01   1.47E-02
+          14  SPn       1260.78  21   0.78    12.4512  -1.44E-01  -4.02E-03
+          15  pSKSac    1385.24  23   5.24     7.5035   7.22E-02  -1.65E-02
+          16  sS        1412.81  23  32.81    11.1056   1.54E-01  -2.50E-03
+          17  sSKSac    1441.15  24   1.15     7.3859   1.74E-01  -2.21E-03
+          18  SS        1531.66  25  31.66    14.8690  -1.20E-01  -6.59E-03
+          19  PKKPdf    1787.11  29  47.11    -1.5826  -1.02E-01  -1.95E-02
+          20  PKKPbc    1799.77  29  59.77    -2.1710  -1.01E-01  -1.56E-02
+          21  SKKPdf    1951.95  32  31.95    -1.5245  -1.88E-01  -1.97E-02
+          22  SKKPbc    1967.15  32  47.15    -2.0666  -1.88E-01  -1.46E-02
+          23  PKKSdf    2002.12  33  22.12    -1.5204  -1.02E-01  -1.98E-02
+          24  SKKSdf    2166.74  36   6.74    -1.4672  -1.88E-01  -2.01E-02
+          25  P'P'df    2283.43  38   3.43    -1.7959  -1.01E-01  -3.86E-02
+          26  S'S'df    3095.86  51  35.86    -1.6016  -1.88E-01  -2.02E-02
+          27  S'S'ac    3107.81  51  47.81    -2.1919  -1.87E-01  -1.52E-02
+
+Enter delta:  

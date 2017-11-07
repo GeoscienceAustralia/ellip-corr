@@ -1,0 +1,12 @@
+To create the direct access tables for the ellipticity
+corrections used by ellip.f and ttimel.f
+
+make direct
+
+then execute direct
+ 
+direct < ELCOR.dat
+
+to produce the direct access tables 
+
+elcordir.tbl
