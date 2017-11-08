@@ -6,8 +6,6 @@ import sys
 python_version = sys.version_info
 __version__ = "0.0.1"
 
-NUMPY_VERSION = 'numpy >= 1.9.2'
-
 
 class PyTest(TestCommand, object):
 
@@ -29,11 +27,8 @@ class PyTest(TestCommand, object):
 
 
 setup(
-    name='Passive-Seismic',
+    name='ellip-corr',
     version=__version__,
-    description='Repository for development of software and '
-                'metadata for passive seismic project',
-
     packages=['ellip', 'tau'],
     package_dir={'ellip-corr': 'ellip'},
     include_package_data=True,
@@ -45,6 +40,9 @@ setup(
             'pytest >= 3.2.0',
         ]
     },
+    tests_require=[
+        'pytest',
+    ],
     license="See Readme",
     zip_safe=False,
     keywords='ak135, travel time, iasp91, ellipticity correction, obspy',

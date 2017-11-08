@@ -32,9 +32,8 @@ With the ellipticity corrections matching those indicated in
 
 ### Tests
 
-Tests use `pytest`. To run tests:
+To run tests:
 
     cd /path/to/ellip-corr/
-    cp ellip/elcordir.tbl .
-    pytest tests/
+    python setup.py test
     
