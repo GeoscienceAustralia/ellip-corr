@@ -28,4 +28,13 @@ and used in python as:
     
 With the ellipticity corrections matching those indicated in
 [ellip/ttimel.help](ellip/ttimel.help).
+
+
+### Tests
+
+Tests use `pytest`. To run tests:
+
+    cd /path/to/ellip-corr/
+    cp ellip/elcordir.tbl .
+    pytest tests/
     
