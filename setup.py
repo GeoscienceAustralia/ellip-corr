@@ -1,10 +1,11 @@
+import shutil
+import os
 from setuptools import setup
 from setuptools.command.test import test as TestCommand
-import sys
 
-
-python_version = sys.version_info
 __version__ = "0.0.1"
+
+ELLIP_CORR = os.path.dirname(__file__)
 
 
 class PyTest(TestCommand, object):
@@ -13,6 +14,9 @@ class PyTest(TestCommand, object):
 
     def initialize_options(self):
         super(PyTest, self).initialize_options()
+        # copy the required
+        shutil.copy(os.path.join(ELLIP_CORR, 'ellip', 'elcordir.tbl'),
+                    os.path.join(ELLIP_CORR, 'elcordir.tbl'))
         self.pytest_args = []
 
     def finalize_options(self):
