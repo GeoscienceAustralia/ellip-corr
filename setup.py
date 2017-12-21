@@ -1,4 +1,3 @@
-import shutil
 import os
 from setuptools import setup
 from setuptools.command.test import test as TestCommand
@@ -14,9 +13,6 @@ class PyTest(TestCommand, object):
 
     def initialize_options(self):
         super(PyTest, self).initialize_options()
-        # copy the required
-        shutil.copy(os.path.join(ELLIP_CORR, 'ellip', 'elcordir.tbl'),
-                    os.path.join(ELLIP_CORR, 'elcordir.tbl'))
         self.pytest_args = []
 
     def finalize_options(self):
@@ -37,8 +33,8 @@ setup(
     package_dir={'ellip-corr': 'ellip'},
     include_package_data=True,
     entry_points={},
-    setup_requires=[],
-    install_requires=['numpy'],
+    setup_requires=['numpy'],
+    install_requires=['numpy', 'cython'],
     extras_require={
         'dev': [
             'pytest >= 3.2.0',
@@ -57,11 +53,10 @@ setup(
         "Programming Language :: Python :: 2",
         "Programming Language :: Python :: 2.7",
         # "Programming Language :: Python :: 3",
-        # "Programming Language :: Python :: 3.3",
-        # "Programming Language :: Python :: 3.4",
-        # "Programming Language :: Python :: 3.5",
-        # "Programming Language :: Python :: 3.6",
-        # "Programming Language :: Python :: 3.7",
+        "Programming Language :: Python :: 3.4",
+        "Programming Language :: Python :: 3.5",
+        "Programming Language :: Python :: 3.6",
+        "Programming Language :: Python :: 3.7",
         # add additional supported python versions
         "Intended Audience :: Science/Research",
         "Intended Audience :: Developers",
@@ -73,3 +68,19 @@ setup(
         'test': PyTest,
     }
 )
+
+# Build the f2py fortran extension
+# --------------------------------
+from numpy.distutils.core import Extension
+from numpy.distutils.core import setup
+
+ellipcorr = Extension(
+    name='ellipcorr',
+    # add several modules files under the same extension
+    sources=['ellip/ellipcorr.f']
+)
+
+setup(
+    name='ellipcorr',
+    ext_modules=[ellipcorr]
+    )

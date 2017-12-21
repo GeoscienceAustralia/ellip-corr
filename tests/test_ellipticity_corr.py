@@ -1,6 +1,6 @@
 from __future__ import print_function
 import pytest
-from ellip import ellipcorr
+import ellipcorr
 
 data = "1  P          626.67     626.29     6.4671  -1.09E-01  -4.25E-03 \
            2  pP         656.86     656.44     6.5478   1.09E-01  -4.21E-03 \

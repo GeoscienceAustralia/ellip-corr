@@ -7,13 +7,16 @@ correction.
 
 ### How to use
 
-After cloning the repo
+Set the `ELLIPCORR` environment variable:
+
+    export ELLIPCORR=/path/to/ellip-corr 
+
+Then run:
     
-    cd tau && make all
-    cd ../ellip && make all
+    cd /path/to/ellip-crr
+    python setup.py install
     
-This will create a shared object `ellip/ellipcorr.so`, which can be imported 
-and used in python as:
+Once installed, `ellipcorr` can be used in python as:
 
     In [1]: import ellipcorr
 

@@ -32,6 +32,7 @@ C   with input from W. Spakman, Utrecht
 C=========================================================================
       character*8 phase
       character*8 phcod(57)
+      CHARACTER(len=255) :: ellipcorr, ellcortbl
       integer phind(57),phspn(57),phnch(57)
       real edist,edepth,ecolat,azim,
      ^     sc0,sc1,sc2,s3,tcor,
@@ -41,7 +42,7 @@ C=========================================================================
       real dpth(6),delta(50)
       real t0(50,6),t1(50,6),t2(50,6)
       integer Ne,Nd
-      logical abrt
+      logical abrt, file_res
       data phcod/
      & "Pup   ","P     ","Pdiff ","PKPab ","PKPbc ","PKPdf ",
      & "PKiKP ","pP    ","pPKPab","pPKPbc","pPKPdf","pPKiKP",
@@ -160,8 +161,24 @@ c
 c                                                acquire phase information
        nr = phind(ip)
 c       write(6,*) "nrec:",nr
-       open(21,file='elcordir.tbl',access='direct',
-     &    form='formatted',recl=80)
+      call get_environment_variable("ELLIPCORR", ellipcorr)
+      ellcortbl = TRIM(ellipcorr)//'/ellip/elcordir.tbl'
+
+      inquire(file=trim(ellcortbl), exist=file_res)
+
+      if (.not.file_res) then
+        print *, 'Not found: ', ellcortbl
+        print *, "Was the `ELLIPCORR` environment variable set?"
+        print *, "And points to the `ellip-corr` dir?"
+        print *, "Use `export ELLIPCORR=/path/to/ellip-corr`"
+        print *, "without the trailing forward slash."
+        print *, "Will crash."
+      endif
+
+!      write (*, *), ellcortbl, res
+
+       open(21,file=ellcortbl,
+     &    access='direct', form='formatted',recl=80)
        read(21,61,rec=nr) phcod(ip),np,d1,d2
 c       write(6,*) "phcode,np,d1,d2: ", phcod(ip),np,d1,d2
        nr = nr+1
