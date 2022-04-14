@@ -17,8 +17,8 @@ TEFF = ttimel.f ellip.f
 ttimel: $(TEF) $(TAUL) 
 	$(f77) -o $(BIN)ttimel $(TEF) $(TAUL)
 
-ellipcorr:
-	f2py2.7 -c ellipcorr.f -m ellipcorr
+pyellip:
+	f2py3.6 -c pyellip.f -m pyellip
 
 #
 # direct access conversion of ellipticity corrections
@@ -26,7 +26,7 @@ DEF = direct.o
 direct: $(DEF) 
 	$(f77) -o $(BIN)direct $(DEF)
 
-all: ttimel direct ellipcorr
+all: ttimel direct pyellip
 
 clean:	
 	rm -f *.o ttimel direct

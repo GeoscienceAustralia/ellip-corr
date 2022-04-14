@@ -1,48 +1,14 @@
-       SUBROUTINE ellipticity_corr(phase,edist,edepth,ecolat,azim,tcor)
-C==========================================================================
-C                                                                         
-C    Ellipticity correction for any given phase using
-C    Dziewonski & Gilbert representation
-C                                                   
-C      The ellipticity corrections are found by linear interpolation       
-C    in terms of values calculated for the ak135 model for a wide 
-C    range of phases to match the output of the iasp software 
-C
-C    Parameters:
-C    character  
-C          phase : a  string specifying the PHASE,   -e.g P, ScP etc.  
-C                                                        
-C    real 
-C          edist  :  epicentral distance to station (in degrees)     
-C          edepth :  depth of event         
-C          ecolat :  epicentral co-latitude of source (in degrees)
-C          azim   :  azimuth from source to station (in degrees)
-C                                
-C          tcor   :  time correction for path to allow for ellipticity
-C 
-C    logical 
-C          abrt   :  a logical variable -usally set to .FALSE.  
-C                    which is set to .TRUE. if a phase for      
-C                    which no data is available is chosen       
-C                                                                         
-C==========================================================================
-C   B.L.N. Kennett RSES,ANU        May 1995, August 1996                 
-C   (based on earlier routine by D.J. Brown)
-C   with input from W. Spakman, Utrecht
-C=========================================================================
+      subroutine select_phase(phase, edist, ip, abrt)
+Cf2py intent(in) phase
+Cf2py intent(in) edist
+Cf2py intent(out) ip
+Cf2py intent(out) abrt
       character*8 phase
+      real edist
+      integer ip
       character*8 phcod(57)
-      CHARACTER(len=255) :: ellipcorr, ellcortbl
-      integer phind(57),phspn(57),phnch(57)
-      real edist,edepth,ecolat,azim,
-     ^     sc0,sc1,sc2,s3,tcor,
-     ^     tau0, a0,b0,h0,d0,e0,f0,g0,
-     ^     tau1, a1,b1,h1,d1,e1,f1,g1,
-     ^     tau2, a2,b2,h2,d2,e2,f2,g2
-      real dpth(6),delta(50)
-      real t0(50,6),t1(50,6),t2(50,6)
-      integer Ne,Nd
-      logical abrt, file_res
+      integer phnch(57)
+      logical abrt
       data phcod/
      & "Pup   ","P     ","Pdiff ","PKPab ","PKPbc ","PKPdf ",
      & "PKiKP ","pP    ","pPKPab","pPKPbc","pPKPdf","pPKiKP",
@@ -54,6 +20,71 @@ C=========================================================================
      & "ScS   ","PcS   ","PKSab ","PKSbc ","PKSdf ","PKKSab",
      & "PKKSbc","PKKSdf","SKKSac","SKKSdf","SS    ","S'S'  ",
      & "SP    ","PS    ","PnS   "/
+      data phnch/
+     &        3,       1,       5,       5,       5,       5,
+     &        5,       2,       6,       6,       6,       6,
+     &        2,       6,       6,       6,       6,       3,
+     &        3,       5,       5,       5,       5,       6,
+     &        6,       6,       6,       6,       6,       2,
+     &        4,       3,       1,       5,       5,       5,
+     &        2,       6,       6,       2,       6,       6,
+     &        3,       3,       5,       5,       5,       6,
+     &        6,       6,       6,       6,       2,       4,
+     &        2,       2,       3/
+      NUMPH = 57
+      abrt = .FALSE.
+
+c                                             check on the length of phase
+      l=len(phase)
+      if(l.lt.8) then
+       stop
+     >    'character variable `phase` should have at least length 8'
+      endif
+
+      ip = -1
+      nc=min(lnblk(phase),8)
+      do 10 i=1,NUMPH
+        if(nc.ne.phnch(i)) goto 10
+        if (phase(1:nc) .eq. phcod(i)(1:nc)) then
+          ip = i
+          go to 11
+        endif
+ 10   continue
+ 11   continue
+
+      if(ip.eq.-1) then
+c                                             check phase aliases
+        call phase_alias(phase,edist,ip)
+      endif
+c                                              phase not found
+      if(ip.lt.0) then
+        write(6,*) phase,'  is not available'
+        abrt = .true.
+        return
+      endif
+
+      end subroutine
+
+      subroutine coeffs(path, ip, t0, t1, t2, d1, d2, delta, abrt)
+Cf2py intent(in) path
+Cf2py intent(in) ip
+Cf2py intent(out) t0
+Cf2py intent(out) t1
+Cf2py intent(out) t2
+Cf2py intent(out) d1
+Cf2py intent(out) d2
+Cf2py intent(out) delta
+Cf2py intent(out) abrt
+      character(*) path ! path to elcordir.tbl
+      integer ip
+      CHARACTER(len=255) :: ellipcorr, ellcortbl
+      integer phind(57),phspn(57)
+      real dpth(6),delta(50)
+      real t0(50,6),t1(50,6),t2(50,6),d1,d2
+      integer Ne,Nd
+      logical abrt
+      character*8 phcode
+
       data phind/
      &        1,      14,      91,     136,     165,     178,
      &      235,     364,     433,     462,     475,     532,
@@ -75,112 +106,27 @@ C=========================================================================
      &        9,      15,      15,      17,      16,      15,
      &       19,      13,       3,       4,      15,       2,
      &       14,      32,      43,      33,      31,      47,
-     &       17,      10,       6/ 
-      data phnch/
-     &        3,       1,       5,       5,       5,       5,
-     &        5,       2,       6,       6,       6,       6,
-     &        2,       6,       6,       6,       6,       3,
-     &        3,       5,       5,       5,       5,       6,
-     &        6,       6,       6,       6,       6,       2,
-     &        4,       3,       1,       5,       5,       5,
-     &        2,       6,       6,       2,       6,       6,
-     &        3,       3,       5,       5,       5,       6,
-     &        6,       6,       6,       6,       2,       4,
-     &        2,       2,       3/ 
-      data dpth/ 0.0, 100.0, 200.0, 300.0, 500.0, 700.0 /
-      save sc0,sc1,sc2
-
-
-Cf2py intent(in) phase
-Cf2py intent(in) edist
-Cf2py intent(in) edepth
-Cf2py intent(in) ecolat
-Cf2py intent(in) azim
-Cf2py intent(out) tcor
-
-c     convert lat and azim into radians
-      degrad = 45.0/atan(1.0)
-      ecolat = (90.0-ecolat)/degrad
-      azim = azim/degrad
+     &       17,      10,       6/
 c...
 c     In addition to the phase names listed above a number of phase aliases
 c     are available in the routine phase_alias, e.g. Pn --> P etc
 c     The input phase code is first checked against the phcod array
 c     and next against the phase aliases.
 c<sc>
-c	                     initial call to set up source dependent constants
-c      entry ellref(ecolat)
-      s3 = sqrt(3.0)/2.0
-      sc0 = 0.25*(1.0+3.0*cos(2.0*ecolat))
-      sc1 = s3*sin(2.0*ecolat)
-      sc2 = s3*sin(ecolat)*sin(ecolat)
-c      return
-c<sc>
 c<ec>                                           phase identification
-c      entry ellcor(phase,edist,edepth,ecolat,azim,tcor,abrt)
-*      write(6,*) "phase,edist,edepth,ecolat,azim"
-*      write(6,*)  phase,edist,edepth,ecolat,azim
       Nd = 6
       NUMPH = 57
-      deldst = 5.0
       abrt = .FALSE.
-c                                             check on the length of phase
-      l=len(phase)
-      if(l.lt.8) then
-       stop 
-     >    'character variable `phase` should have at least length 8'
-      endif
 
-c                                             select phase
-      ip = -1
-      nc=min(lnblk(phase),8)
-      do 10 i=1,NUMPH
-        if(nc.ne.phnch(i)) goto 10
-        if (phase(1:nc) .eq. phcod(i)(1:nc)) then
-          ip = i
-          go to 11
-        endif
- 10   continue
- 11   continue
-
-      if(ip.eq.-1) then
-c                                             check phase aliases
-        call phase_alias(phase,edist,ip)
-      endif
-      Ne = phspn(ip)
-*      write(6,*) "ip:",ip
-c                                              phase not found
-      if(ip.lt.0) then
-        write(6,*) phase,'  is not available'
-        abrt = .true.
-        return
-      endif
-c                                               special case of upgoing waves
-*
-c
-c                                                acquire phase information
+       Ne = phspn(ip)
        nr = phind(ip)
-c       write(6,*) "nrec:",nr
-      call get_environment_variable("ELLIPCORR", ellipcorr)
-      ellcortbl = TRIM(ellipcorr)//'/ellip/elcordir.tbl'
+*       write(6,*) "nrec:",nr
+       ellcortbl = TRIM(path)
 
-      inquire(file=trim(ellcortbl), exist=file_res)
-
-      if (.not.file_res) then
-        print *, 'Not found: ', ellcortbl
-        print *, "Was the `ELLIPCORR` environment variable set?"
-        print *, "And points to the `ellip-corr` dir?"
-        print *, "Use `export ELLIPCORR=/path/to/ellip-corr`"
-        print *, "without the trailing forward slash."
-        print *, "Will crash."
-      endif
-
-!      write (*, *), ellcortbl, res
-
-       open(21,file=ellcortbl,
-     &    access='direct', form='formatted',recl=80)
-       read(21,61,rec=nr) phcod(ip),np,d1,d2
-c       write(6,*) "phcode,np,d1,d2: ", phcod(ip),np,d1,d2
+       open(21,file=ellcortbl, access='direct',
+     &    form='formatted',recl=80)
+       read(21,61,rec=nr) phcode,np,d1,d2
+*       write(6,*) "phcode,np,d1,d2: ", phcod(ip),np,d1,d2
        nr = nr+1
        if(np.ne.Ne) write(6,*) "HELP! - index wrong"
        do 15 i=1,np
@@ -192,10 +138,87 @@ c       write(6,*) "phcode,np,d1,d2: ", phcod(ip),np,d1,d2
          nr = nr+1
          read(21,63,rec=nr) (t2(i,m),m=1,6)
          nr = nr+1
- 15    continue         
+ 15    continue
  61    format(a8,i10,2f10.0)
  62    format(f10.0)
  63    format(6f10.4)
+
+       end subroutine
+
+       SUBROUTINE ellip(t0,t1,t2,d1,d2,delta,edist,edepth,
+     ^  ecolat,azim,tcor,abrt)
+C==========================================================================
+C                                                                         
+C    Ellipticity correction for any given phase using
+C    Dziewonski & Gilbert representation
+C                                                   
+C      The ellipticity corrections are found by linear interpolation       
+C    in terms of values calculated for the ak135 model for a wide 
+C    range of phases to match the output of the iasp software 
+C
+C     first call:  ellref(ecolat) 
+C                        - to set up source dependent constants
+C     2nd call  :  ellcor(phase,edist,depth,ecolat,azim,tcor,abrt) 
+C                        - to calculate correction for a station                                                                                     C                                                                         
+C    Parameters: 
+C    character  
+C          phase : a  string specifying the PHASE,   -e.g P, ScP etc.  
+C                                                        
+C    real 
+C          edist  :  epicentral distance to station (in degrees)     
+C          edepth :  depth of event         
+C          ecolat :  epicentral co-latitude of source (in radians) 
+C          azim   :  azimuth from source to station (in radians)
+C                                
+C          tcor   :  time correction for path to allow for ellipticity
+C 
+C    logical 
+C          abrt   :  a logical variable -usally set to .FALSE.  
+C                    which is set to .TRUE. if a phase for      
+C                    which no data is available is chosen       
+C                                                                         
+C==========================================================================
+C   B.L.N. Kennett RSES,ANU        May 1995, August 1996                 
+C   (based on earlier routine by D.J. Brown)
+C   with input from W. Spakman, Utrecht
+C=========================================================================
+Cf2py intent(in) t0
+Cf2py intent(in) t1
+Cf2py intent(in) t2
+Cf2py intent(in) d1
+Cf2py intent(in) d2
+Cf2py intent(in) delta
+Cf2py intent(in) edist
+Cf2py intent(in) edepth
+Cf2py intent(in) ecolat
+Cf2py intent(in) azim
+Cf2py intent(out) tcor
+Cf2py intent(out) abrt
+
+      real t0(50,6),t1(50,6),t2(50,6),d1,d2,delta(50),
+     ^ edist,ecolat,azim,tcor, sc0,sc1,sc2,s3
+      logical abrt
+      real deldst, dpth(6)
+      integer Ne,Nd
+      data dpth/ 0.0, 100.0, 200.0, 300.0, 500.0, 700.0 /
+
+      deldst = 5.0
+      Nd = 6
+      abrt = .FALSE.
+
+c...
+c     In addition to the phase names listed above a number of phase aliases
+c     are available in the routine phase_alias, e.g. Pn --> P etc
+c     The input phase code is first checked against the phcod array
+c     and next against the phase aliases.
+c<sc>
+c	                     initial call to set up source dependent constants
+c
+      s3 = sqrt(3.0)/2.0
+      sc0 = 0.25*(1.0+3.0*cos(2.0*ecolat))
+      sc1 = s3*sin(2.0*ecolat)
+      sc2 = s3*sin(ecolat)*sin(ecolat)
+c<sc>
 c                                  distance index
        idist = 1 + int( (edist-d1)/ deldst )
        if(edist.lt.d1) idist =1
@@ -217,11 +240,11 @@ c tau0
          b0 = t0(idist,jdepth+1)
          h0 = t0(idist+1,jdepth+1)
          d0 = t0(idist+1,jdepth)
-         e0 = a0 + 
+         e0 = a0 +
      ^       (d0-a0)*(edist-delta(idist))/(delta(idist+1)-delta(idist))
-         f0 = b0 + 
+         f0 = b0 +
      ^       (h0-b0)*(edist-delta(idist))/(delta(idist+1)-delta(idist))
-         g0 = e0 + 
+         g0 = e0 +
      ^       (f0-e0)*(edepth-dpth(jdepth))/(dpth(jdepth+1)-dpth(jdepth))
          tau0 = g0
 c tau1
@@ -229,11 +252,11 @@ c tau1
          b1 = t1(idist,jdepth+1)
          h1 = t1(idist+1,jdepth+1)
          d1 = t1(idist+1,jdepth)
-         e1 = a1 + 
+         e1 = a1 +
      ^       (d1-a1)*(edist-delta(idist))/(delta(idist+1)-delta(idist))
-         f1 = b1 + 
+         f1 = b1 +
      ^       (h1-b1)*(edist-delta(idist))/(delta(idist+1)-delta(idist))
-         g1 = e1 + 
+         g1 = e1 +
      ^       (f1-e1)*(edepth-dpth(jdepth))/(dpth(jdepth+1)-dpth(jdepth))
          tau1 = g1
 c tau2
@@ -241,11 +264,11 @@ c tau2
          b2 = t2(idist,jdepth+1)
          h2 = t2(idist+1,jdepth+1)
          d2 = t2(idist+1,jdepth)
-         e2 = a2 + 
+         e2 = a2 +
      ^       (d2-a2)*(edist-delta(idist))/(delta(idist+1)-delta(idist))
-         f2 = b2 + 
+         f2 = b2 +
      ^       (h2-b2)*(edist-delta(idist))/(delta(idist+1)-delta(idist))
-         g2 = e2 + 
+         g2 = e2 +
      ^       (f2-e2)*(edepth-dpth(jdepth))/(dpth(jdepth+1)-dpth(jdepth))
          tau2 = g2
 c
@@ -256,9 +279,8 @@ c
 c
          tcor = sc0*tau0 + sc1*cos(azim)*tau1 + sc2*cos(2.0*azim)*tau2
 c
-c      return
-c<ec>
-      end
+      end subroutine
+
       subroutine phase_alias(phase,delta,ip)
 
 c-    check for alternative phase names
@@ -345,11 +367,11 @@ c       phase='SS      '
 c                                       upgoing P, S
       else if(phase(1:2).eq.'p ') then
 c       phase='Pup     '
-        ip=1  
+        ip=1
       else if(phase(1:2).eq.'s ') then
 c       phase='Sup     '
-        ip=32 
-c                                        
+        ip=32
+c
       else if(delta.le.100.0.and.phase.eq.'pPdiff  ') then
 c       phase='pP      '
         ip=8
@@ -374,7 +396,7 @@ c       phase='Sdiff   '
       else if(delta.ge.100.0.and.phase.eq.'sSdiff  ') then
 c       phase='Sdiff    '
         ip=40
-c            
+c
       else if(delta.le.165.0.and.phase.eq.'PKPdiff ') then
 c       phase='PKPbc '
         ip=5
@@ -384,7 +406,7 @@ c       phase='pPKPbc '
       else if(delta.le.165.0.and.phase.eq.'sPKPdiff') then
 c       phase='sPKPbc '
         ip=15
-c                             
+c
       else if(phase(1:4).eq."P'P'") then
 c       phase="P'P'    "
         ip =31
@@ -409,6 +431,7 @@ c
       endif
       return
       end
+
 c-----
       integer function lnblk(s)
       character *(*) s
@@ -422,3 +445,20 @@ c-----
       lnblk=0
       return
       end
+
+        program test
+            real d1,d2,delta(50)
+            real t0(50,6),t1(50,6),t2(50,6)
+            real tcor
+            logical abrt
+            integer ip
+
+            edist = 65.
+
+            call select_phase("pP      ", edist, ip, abrt)
+            call coeffs("elcordir.tbl",ip,t0, t1, t2,d1,d2,delta,abrt)
+            call ellip(t0,t1,t2,d1,d2,delta,edist,124.,
+     &      2.0943951023931953, 0.6806784082777885,tcor, abrt)
+            write(6,*)  tcor, abrt
+
+        end program
