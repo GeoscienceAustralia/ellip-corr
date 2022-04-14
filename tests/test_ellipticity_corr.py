@@ -2,6 +2,10 @@ from __future__ import print_function
 import pytest
 from PyEllipCorr import PyEllipCorr
 
+""" 
+The values below were extracted from ttimel
+"""
+
 """
 Source latitude:  -30
 Source depth (km):  124
