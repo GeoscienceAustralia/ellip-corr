@@ -4,6 +4,11 @@ This repo was started from ftp://rses.anu.edu.au/pub/ak135/.
 
 Ellipticity corrections for travel times based on `ak135`.
 
+### Setup
+
+    cd ellip-corr
+    make
+
 ### How to use
 
     from PyEllipCorr import PyEllipCorr 

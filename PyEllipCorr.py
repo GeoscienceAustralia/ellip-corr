@@ -2,10 +2,6 @@ import os
 from numpy import f2py
 import numpy as np
 from collections import defaultdict
-
-sourcecode = open(os.path.join(os.path.dirname(__file__),'ellip/pyellip.f')).read()
-
-f2py.compile(sourcecode, modulename='pyellip', verbose=False)
 from pyellip import select_phase, coeffs, ellip
 
 class PyEllipCorr:
