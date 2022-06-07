@@ -47,4 +47,3 @@ class PyEllipCorr:
     # end func
 # end class
 
-p=PyEllipCorr()
